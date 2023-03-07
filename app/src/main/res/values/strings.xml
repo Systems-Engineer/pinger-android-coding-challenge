@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Pinger Challenge</string>
+    <plurals name="repeated_string">
+        <item quantity="one">Repeated %d time</item>
+        <item quantity="other">Repeated %d times</item>
+    </plurals>
+</resources>
