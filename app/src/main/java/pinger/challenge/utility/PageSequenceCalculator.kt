@@ -1,14 +1,15 @@
 package pinger.challenge.utility
 
 import android.util.Log
+import javax.inject.Inject
 
-class PageSequenceCalculator {
+class PageSequenceCalculator @Inject constructor() {
     private val pageSequenceOccurrences = mutableMapOf<String, Int>()
 
     fun getMostCommonPageSequences(
         userLogData: HashMap<String, MutableList<String>>,
         numberOfConsecutivePages: Int
-    ): List<Pair<String, Int>> {
+    ): MutableList<Pair<String, Int>> {
         pageSequenceOccurrences.clear()
 
         // for each user's IP address
@@ -29,7 +30,7 @@ class PageSequenceCalculator {
                 }
             }
         }
-        return sortMap()
+        return sortMap().toMutableList()
     }
 
     private fun getPageSequenceStringAsLines(pageSequence: List<String>): String {

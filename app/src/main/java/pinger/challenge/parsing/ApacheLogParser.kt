@@ -2,13 +2,14 @@ package pinger.challenge.parsing
 
 import android.util.Log
 import java.util.regex.Pattern
+import javax.inject.Inject
 
-class ApacheLogParser(private var logList: List<String>) {
+class ApacheLogParser @Inject constructor() {
     private val logEntryPattern =
         "^([\\d.]+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})] \"(\\w+)(\\s)(\\S+)(.+?)\""
     private val logSearchPattern = Pattern.compile(logEntryPattern)
 
-    fun parseLogsForEachUser(): HashMap<String, MutableList<String>> {
+    fun parseLogsForEachUser(logList: List<String>): HashMap<String, MutableList<String>> {
         val listOfLogEntriesPerUser = HashMap<String, MutableList<String>>()
 
         for (logEntry in logList) {

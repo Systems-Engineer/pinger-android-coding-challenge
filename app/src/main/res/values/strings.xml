@@ -4,4 +4,8 @@
         <item quantity="one">Repeated %d time</item>
         <item quantity="other">Repeated %d times</item>
     </plurals>
+
+    <string name="pinger_challenge">Pinger Challenge</string>
+    <string name="request_failed">The request failed. Please try again.</string>
+    <string name="download_icon">Download Icon</string>
 </resources>
