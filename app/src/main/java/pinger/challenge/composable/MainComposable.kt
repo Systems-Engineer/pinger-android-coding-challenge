@@ -32,27 +32,15 @@ fun MainActivityScreen(viewModel: PageSequenceViewModel) {
     val scrollState = rememberLazyListState()
 
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = { AppBar() },
-        content = {
-            ScreenContent(state.value, effect, scaffoldState, scrollState, it) },
+        content = { ScreenContent(state.value, effect, scaffoldState, scrollState, it) },
         floatingActionButton = {
-            FloatingButton{
+            FloatingButton {
                 viewModel.setEvent(PageSequenceContract.Event.FetchMostPopularPathSequences)
             }
         }
     )
-}
-
-@Composable
-fun LoadingView() {
-    Box(
-        contentAlignment = Alignment.Center, // you apply alignment to all children
-        modifier = Modifier.fillMaxSize()
-    ) {
-        CircularProgressIndicator(
-            modifier = Modifier.align(Alignment.Center) // or to a specific child
-        )
-    }
 }
 
 @Composable
@@ -83,33 +71,40 @@ fun ScreenContent(
     scrollState: LazyListState,
     paddingValues: PaddingValues
 ) {
-    LazyColumn(
-        state = scrollState,
-        contentPadding = paddingValues,
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize()
     ) {
-        items(
-            items = state.list,
-            itemContent = { item ->
-                ListItem(item)
-            }
-        )
-    }
-
-    if (state.isLoading) {
-        LoadingView()
-    }
-
-    LaunchedEffect(scaffoldState.snackbarHostState) {
-        effectFlow.onEach { effect ->
-            when (effect) {
-                is PageSequenceContract.Effect.ShowSnackError -> {
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        message = effect.message.toString()
-                    )
+        LazyColumn(
+            state = scrollState,
+            contentPadding = paddingValues,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(
+                items = state.list,
+                itemContent = { item ->
+                    ListItem(item)
                 }
-            }
-        }.collect()
+            )
+        }
+
+        if (state.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center) // or to a specific child
+            )
+        }
+
+        LaunchedEffect(scaffoldState.snackbarHostState) {
+            effectFlow.onEach { effect ->
+                when (effect) {
+                    is PageSequenceContract.Effect.ShowSnackError -> {
+                        scaffoldState.snackbarHostState.showSnackbar(
+                            message = effect.message.toString()
+                        )
+                    }
+                }
+            }.collect()
+        }
     }
 }
 

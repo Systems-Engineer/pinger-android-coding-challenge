@@ -13,8 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PageSequenceViewModel @Inject constructor(
-    private val pageSequenceRepository: PageSequenceRepository,
-    private val savedStateHandle: SavedStateHandle
+    private val pageSequenceRepository: PageSequenceRepository
 ) : BaseViewModel<PageSequenceContract.Event, PageSequenceContract.State, PageSequenceContract.Effect>() {
 
     init {
@@ -48,21 +47,4 @@ class PageSequenceViewModel @Inject constructor(
             }
         }
     }
-
-    /**private val _dataState: MutableLiveData<DataState<MutableList<Pair<String, Int>>>> = MutableLiveData()
-    val dataState: LiveData<DataState<MutableList<Pair<String, Int>>>>
-        get() = _dataState
-
-    fun triggerAction(event: PageSequenceAction) {
-        viewModelScope.launch {
-            when (event) {
-                is PageSequenceAction.FetchMostPopularPathSequencesAction -> {
-                    pageSequenceRepository.fetchMostPopularPathSequences(CoroutineScope(IO))
-                        .onEach { dataState ->
-                            _dataState.value = dataState
-                        }.launchIn(viewModelScope)
-                }
-            }
-        }
-    }**/
 }

@@ -31,12 +31,7 @@ class PageSequenceRepository @Inject constructor(
                 ).onEach {
                     when (it) {
                         is ReaderProcessState.Complete -> {
-                            val logs = parseApacheLogs(pathSequenceList)
-                            val mostCommonPageSequences =
-                                pageSequenceCalculator.getMostCommonPageSequences(
-                                    logs,
-                                    numberOfConsecutivePages
-                                )
+                            val mostCommonPageSequences = getMostCommonPageSequences(pathSequenceList)
                             send(DataState.Success(mostCommonPageSequences))
                             close()
                         }
@@ -60,7 +55,11 @@ class PageSequenceRepository @Inject constructor(
         awaitClose()
     }
 
-    private fun parseApacheLogs(pathSequenceData: MutableList<String>): HashMap<String, MutableList<String>> {
-        return apacheLogParser.parseLogsForEachUser(pathSequenceData)
+    private fun getMostCommonPageSequences(pathSequenceData: MutableList<String>): MutableList<Pair<String, Int>> {
+        val logs = apacheLogParser.parseLogsForEachUser(pathSequenceData)
+        return pageSequenceCalculator.getMostCommonPageSequences(
+            logs,
+            numberOfConsecutivePages
+        )
     }
 }
