@@ -7,6 +7,6 @@ import retrofit2.http.GET
 
 interface FileDownloadAPI {
 
-    @GET("/cplachta-pinger/android_coding_challenge/master/Apache.log")
+    @GET("/Systems-Engineer/pinger-android-coding-challenge/master/Apache.log")
     suspend fun downloadApacheLogStream(): Response<ResponseBody>
 }
