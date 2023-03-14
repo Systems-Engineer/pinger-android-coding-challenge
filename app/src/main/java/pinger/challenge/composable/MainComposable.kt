@@ -90,7 +90,7 @@ fun ScreenContent(
 
         if (state.isLoading) {
             CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center) // or to a specific child
+                modifier = Modifier.align(Alignment.Center)
             )
         }
 
