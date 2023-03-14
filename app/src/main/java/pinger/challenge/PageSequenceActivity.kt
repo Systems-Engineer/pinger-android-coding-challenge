@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
 import pinger.challenge.composable.MainActivityScreen
+import pinger.challenge.intent.PageSequenceContract
 import pinger.challenge.theme.PingerAndroidCodingChallengeTheme
 import pinger.challenge.viewmodel.PageSequenceViewModel
 

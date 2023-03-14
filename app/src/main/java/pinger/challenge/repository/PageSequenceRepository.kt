@@ -23,36 +23,41 @@ class PageSequenceRepository @Inject constructor(
 
     suspend fun fetchMostPopularPathSequences(scope: CoroutineScope) = channelFlow {
         val pathSequenceList = mutableListOf<String>()
-        send(DataState.Loading)
-        val response = fileDownloadAPI.downloadApacheLogStream()
-        if (response.isSuccessful && response.body() != null) {
-            SourceReader.getLinesOfInputFromSource(
-                response.body()!!.source()
-            ).onEach {
-                when (it) {
-                    is ReaderProcessState.Complete -> {
-                        val logs = parseApacheLogs(pathSequenceList)
-                        val mostCommonPageSequences =
-                            pageSequenceCalculator.getMostCommonPageSequences(
-                                logs,
-                                numberOfConsecutivePages
-                            )
-                        send(DataState.Success(mostCommonPageSequences))
-                        close()
+        try {
+            val response = fileDownloadAPI.downloadApacheLogStream()
+            if (response.isSuccessful && response.body() != null) {
+                SourceReader.getLinesOfInputFromSource(
+                    response.body()!!.source()
+                ).onEach {
+                    when (it) {
+                        is ReaderProcessState.Complete -> {
+                            val logs = parseApacheLogs(pathSequenceList)
+                            val mostCommonPageSequences =
+                                pageSequenceCalculator.getMostCommonPageSequences(
+                                    logs,
+                                    numberOfConsecutivePages
+                                )
+                            send(DataState.Success(mostCommonPageSequences))
+                            close()
+                        }
+                        is ReaderProcessState.Next -> {
+                            pathSequenceList.add(it.data)
+                        }
+                        is ReaderProcessState.Error -> {
+                            send(DataState.Error(it.exception))
+                            close()
+                        }
                     }
-                    is ReaderProcessState.Next -> {
-                        pathSequenceList.add(it.data)
-                    }
-                    is ReaderProcessState.Error -> {
-                        send(DataState.Error(it.exception))
-                        close()
-                    }
-                }
-            }.launchIn(scope)
-            awaitClose()
-        } else {
+                }.launchIn(scope)
+            } else {
+                send(DataState.Error(Exception(context.getString(R.string.request_failed))))
+                close()
+            }
+        } catch (exc: Exception) {
             send(DataState.Error(Exception(context.getString(R.string.request_failed))))
+            close()
         }
+        awaitClose()
     }
 
     private fun parseApacheLogs(pathSequenceData: MutableList<String>): HashMap<String, MutableList<String>> {

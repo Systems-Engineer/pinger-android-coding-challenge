@@ -4,9 +4,10 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import pinger.challenge.networking.FileDownloadAPI
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -15,10 +16,19 @@ class RetrofitModule {
 
     @Singleton
     @Provides
-    fun provideApi(): FileDownloadAPI =
+    fun provideOkhttpClient(): OkHttpClient {
+        return OkHttpClient().newBuilder()
+            .readTimeout(5, TimeUnit.SECONDS)
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideApi(okHttpClient: OkHttpClient): FileDownloadAPI =
         Retrofit.Builder()
             .baseUrl("https://raw.githubusercontent.com")
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .client(okHttpClient)
             .build()
             .create(FileDownloadAPI::class.java)
 }

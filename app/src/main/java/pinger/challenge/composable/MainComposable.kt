@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -18,24 +17,29 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import pinger.challenge.R
-import pinger.challenge.intent.DataState
-import pinger.challenge.intent.PageSequenceAction
+import pinger.challenge.intent.PageSequenceContract
 import pinger.challenge.viewmodel.PageSequenceViewModel
 
 @Composable
 fun MainActivityScreen(viewModel: PageSequenceViewModel) {
-    val dataState by viewModel.dataState.observeAsState()
-    val scrollState = rememberLazyListState()
-    val isLoading = remember { mutableStateOf(false) }
+    val state = viewModel.viewState.collectAsState()
+    val effect = viewModel.effect
     val scaffoldState = rememberScaffoldState()
-
-    viewModel.triggerAction(PageSequenceAction.FetchMostPopularPathSequencesAction)
+    val scrollState = rememberLazyListState()
 
     Scaffold(
         topBar = { AppBar() },
-        content = { RecyclerView(dataState, scrollState, it) },
-        floatingActionButton = { FloatingButton(isLoading) }
+        content = {
+            ScreenContent(state.value, effect, scaffoldState, scrollState, it) },
+        floatingActionButton = {
+            FloatingButton{
+                viewModel.setEvent(PageSequenceContract.Event.FetchMostPopularPathSequences)
+            }
+        }
     )
 }
 
@@ -60,12 +64,10 @@ fun AppBar() {
 }
 
 @Composable
-fun FloatingButton(isLoading : MutableState<Boolean>) {
-    FloatingActionButton(onClick = {
-        isLoading.value = true
-        // TODO do action here
-        // TODO isLoading.value = false
-    }) {
+fun FloatingButton(onClick: ()-> Unit) {
+    FloatingActionButton(
+        onClick = onClick
+    ) {
         Image(
             painter = painterResource(id = R.drawable.cloud_download),
             contentDescription = stringResource(id = R.string.download_icon)
@@ -74,28 +76,40 @@ fun FloatingButton(isLoading : MutableState<Boolean>) {
 }
 
 @Composable
-fun RecyclerView(dataState: DataState<MutableList<Pair<String, Int>>>?, scrollState: LazyListState, paddingValues: PaddingValues) {
-    when (dataState) {
-        is DataState.Success -> {
-            LazyColumn(state = scrollState, contentPadding = paddingValues, modifier = Modifier.fillMaxSize()) {
-                items(
-                    items = dataState.data,
-                    itemContent = { item ->
-                        ListItem(item)
-                    }
-                )
+fun ScreenContent(
+    state: PageSequenceContract.State,
+    effectFlow: Flow<PageSequenceContract.Effect>,
+    scaffoldState: ScaffoldState,
+    scrollState: LazyListState,
+    paddingValues: PaddingValues
+) {
+    LazyColumn(
+        state = scrollState,
+        contentPadding = paddingValues,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        items(
+            items = state.list,
+            itemContent = { item ->
+                ListItem(item)
             }
-        }
-        is DataState.Error -> {
+        )
+    }
 
-        }
-        is DataState.Loading -> {
-            LoadingView()
-        }
-        else -> {
-            // null state show error
+    if (state.isLoading) {
+        LoadingView()
+    }
 
-        }
+    LaunchedEffect(scaffoldState.snackbarHostState) {
+        effectFlow.onEach { effect ->
+            when (effect) {
+                is PageSequenceContract.Effect.ShowSnackError -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = effect.message.toString()
+                    )
+                }
+            }
+        }.collect()
     }
 }
 
@@ -108,8 +122,7 @@ fun ListItem(item: Pair<String, Int>) {
             .shadow(4.dp, RoundedCornerShape(2.dp))
     ) {
         Card(
-            shape = RoundedCornerShape(2.dp),
-            backgroundColor = MaterialTheme.colors.background,
+            shape = RoundedCornerShape(2.dp)
         ) {
             Column(
                 modifier = Modifier

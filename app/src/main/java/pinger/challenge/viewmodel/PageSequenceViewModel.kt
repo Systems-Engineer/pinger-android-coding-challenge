@@ -2,13 +2,12 @@ package pinger.challenge.viewmodel
 
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import pinger.challenge.intent.PageSequenceAction
 import pinger.challenge.intent.DataState
+import pinger.challenge.intent.PageSequenceContract
 import pinger.challenge.repository.PageSequenceRepository
 import javax.inject.Inject
 
@@ -16,13 +15,41 @@ import javax.inject.Inject
 class PageSequenceViewModel @Inject constructor(
     private val pageSequenceRepository: PageSequenceRepository,
     private val savedStateHandle: SavedStateHandle
-) : ViewModel() {
+) : BaseViewModel<PageSequenceContract.Event, PageSequenceContract.State, PageSequenceContract.Effect>() {
 
-    /**private val _pathSequenceList : MutableLiveData<MutableList<String>> = savedStateHandle.getLiveData("list")
-    val pathSequenceList : LiveData<MutableList<String>>
-        get() = _pathSequenceList**/
+    init {
+        setEvent(PageSequenceContract.Event.FetchMostPopularPathSequences)
+    }
 
-    private val _dataState: MutableLiveData<DataState<MutableList<Pair<String, Int>>>> = MutableLiveData()
+    override fun setInitialState() = PageSequenceContract.State(isLoading = true)
+
+    override fun handleEvent(event: PageSequenceContract.Event) {
+        setState { copy(isLoading = true) }
+        when (event) {
+            is PageSequenceContract.Event.FetchMostPopularPathSequences -> {
+                viewModelScope.launch(IO) {
+                    pageSequenceRepository
+                        .fetchMostPopularPathSequences(this)
+                        .onEach { dataState ->
+                            when (dataState) {
+                                is DataState.Success -> {
+                                    setState {
+                                        copy(list = dataState.data, isLoading = false)
+                                    }
+                                }
+                                is DataState.Error -> {
+                                    setState { copy(isLoading = false) }
+                                    setEffect { PageSequenceContract.Effect.ShowSnackError(
+                                            dataState.exception.message) }
+                                }
+                            }
+                        }.launchIn(this)
+                }
+            }
+        }
+    }
+
+    /**private val _dataState: MutableLiveData<DataState<MutableList<Pair<String, Int>>>> = MutableLiveData()
     val dataState: LiveData<DataState<MutableList<Pair<String, Int>>>>
         get() = _dataState
 
@@ -37,5 +64,5 @@ class PageSequenceViewModel @Inject constructor(
                 }
             }
         }
-    }
+    }**/
 }
