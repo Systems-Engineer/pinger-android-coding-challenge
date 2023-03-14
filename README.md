@@ -1,7 +1,7 @@
-# Pinger Android Code Challenge
+# Pinger Android Code Challenge by Brahian Martinez
 
 This repo contains code that solved the following challenge,
-> Please create an Android app that downloads a text file, parses the contents, and displays the results. You may retrieve the file [here](https://raw.githubusercontent.com/cplachta-pinger/android_coding_challenge/master/Apache.log). The file is a standard Apache web server access log. We’re interested in knowing the most common three-page sequences in the file. A three-page sequence is three consecutive requests from the same user. In case it helps simplify your processing, you can assume the following about the contents:
+> Please create an Android app that downloads a text file, parses the contents, and displays the results. You may retrieve the file [here](https://raw.githubusercontent.com/Systems-Engineer/pinger-android-coding-challenge/master/Apache.log). The file is a standard Apache web server access log. We’re interested in knowing the most common three-page sequences in the file. A three-page sequence is three consecutive requests from the same user. In case it helps simplify your processing, you can assume the following about the contents:
 > -   Log entries are in ascending chronological order
 > -   An IP address is unique per user
 >
