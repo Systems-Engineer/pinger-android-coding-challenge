@@ -6,7 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import pinger.challenge.networking.FileDownloadAPI
+import pinger.challenge.network.FileDownloadAPI
 import pinger.challenge.parsing.ApacheLogParser
 import pinger.challenge.repository.PageSequenceRepository
 import pinger.challenge.utility.PageSequenceCalculator

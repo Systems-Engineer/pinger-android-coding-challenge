@@ -1,4 +1,4 @@
-package pinger.challenge.networking
+package pinger.challenge.network
 
 import okhttp3.ResponseBody
 import retrofit2.Response

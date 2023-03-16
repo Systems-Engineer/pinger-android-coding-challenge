@@ -1,11 +1,10 @@
 package pinger.challenge.repository
 
 import android.content.Context
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import pinger.challenge.R
-import pinger.challenge.networking.FileDownloadAPI
+import pinger.challenge.network.FileDownloadAPI
 import pinger.challenge.parsing.ApacheLogParser
 import pinger.challenge.intent.DataState
 import pinger.challenge.utility.PageSequenceCalculator
@@ -21,7 +20,7 @@ class PageSequenceRepository @Inject constructor(
 ) {
     private val numberOfConsecutivePages = 3
 
-    suspend fun fetchMostPopularPathSequences(scope: CoroutineScope) = channelFlow {
+    suspend fun fetchMostPopularPathSequences() = channelFlow {
         val pathSequenceList = mutableListOf<String>()
         try {
             val response = fileDownloadAPI.downloadApacheLogStream()
@@ -43,7 +42,7 @@ class PageSequenceRepository @Inject constructor(
                             close()
                         }
                     }
-                }.launchIn(scope)
+                }.collect()
             } else {
                 send(DataState.Error(Exception(context.getString(R.string.request_failed))))
                 close()
