@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -94,12 +95,13 @@ fun ScreenContent(
             )
         }
 
+        val context = LocalContext.current
         LaunchedEffect(scaffoldState.snackbarHostState) {
             effectFlow.onEach { effect ->
                 when (effect) {
                     is PageSequenceContract.Effect.ShowSnackError -> {
                         scaffoldState.snackbarHostState.showSnackbar(
-                            message = effect.message.toString()
+                            message = context.resources.getString(R.string.request_failed)
                         )
                     }
                 }

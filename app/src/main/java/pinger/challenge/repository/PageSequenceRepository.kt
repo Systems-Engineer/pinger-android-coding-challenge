@@ -1,11 +1,9 @@
 package pinger.challenge.repository
 
-import android.content.Context
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
-import pinger.challenge.R
 import pinger.challenge.network.FileDownloadAPI
-import pinger.challenge.parsing.ApacheLogParser
+import pinger.challenge.parser.ApacheLogParser
 import pinger.challenge.intent.DataState
 import pinger.challenge.utility.PageSequenceCalculator
 import pinger.challenge.utility.ReaderProcessState
@@ -13,7 +11,6 @@ import pinger.challenge.utility.SourceReader
 import javax.inject.Inject
 
 class PageSequenceRepository @Inject constructor(
-    private val context: Context,
     private val fileDownloadAPI: FileDownloadAPI,
     private val apacheLogParser: ApacheLogParser,
     private val pageSequenceCalculator: PageSequenceCalculator
@@ -44,11 +41,11 @@ class PageSequenceRepository @Inject constructor(
                     }
                 }.collect()
             } else {
-                send(DataState.Error(Exception(context.getString(R.string.request_failed))))
+                send(DataState.Error(Exception(response.errorBody().toString())))
                 close()
             }
         } catch (exc: Exception) {
-            send(DataState.Error(Exception(context.getString(R.string.request_failed))))
+            send(DataState.Error(exc))
             close()
         }
         awaitClose()

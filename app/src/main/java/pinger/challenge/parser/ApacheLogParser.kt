@@ -1,4 +1,4 @@
-package pinger.challenge.parsing
+package pinger.challenge.parser
 
 import android.util.Log
 import java.util.regex.Pattern

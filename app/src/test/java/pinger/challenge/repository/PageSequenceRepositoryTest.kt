@@ -1,36 +1,59 @@
-package pinger.challenge.network
+package pinger.challenge.repository
 
+import io.mockk.MockKAnnotations
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
-import org.mockito.MockitoAnnotations
-import pinger.challenge.repository.PageSequenceRepository
+import pinger.challenge.intent.DataState
+import pinger.challenge.network.FileDownloadAPI
+import pinger.challenge.parser.ApacheLogParser
+import pinger.challenge.utility.PageSequenceCalculator
 import retrofit2.Response
 
-class FileDownloadApiTest {
+class PageSequenceRepositoryTest {
 
     private lateinit var pageSequenceRepository: PageSequenceRepository
 
     private val fileDownloadAPI: FileDownloadAPI = mockk()
 
+    private val apacheLogParser = ApacheLogParser()
+
+    private val pageSequenceCalculator = PageSequenceCalculator()
+
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
+        MockKAnnotations.init(this)
     }
 
     @Test
-    fun apacheFileIsReturned() = runBlocking {
+    fun `DataState Success is returned when getting correct response from FileDownloadAPI`() = runBlocking {
+        // given
         coEvery { fileDownloadAPI.downloadApacheLogStream() } returns Response.success(getResponse().toResponseBody())
-        pageSequenceRepository = PageSequenceRepository(mockk(), fileDownloadAPI, mockk(), mockk())
+        pageSequenceRepository = PageSequenceRepository(fileDownloadAPI, apacheLogParser, pageSequenceCalculator)
 
-        // val response = pageSequenceRepository.fetchMostPopularPathSequences(this).collect()
+        // when
+        pageSequenceRepository.fetchMostPopularPathSequences().onEach {
+            // then
+            assert(it is DataState.Success)
+        }.collect()
+    }
 
-        // coVerify {}
+    @Test
+    fun `DataState Error is returned when getting error response from FileDownloadAPI`() = runBlocking {
+        // given
+        coEvery { fileDownloadAPI.downloadApacheLogStream() } returns Response.error(404, "".toResponseBody())
+        pageSequenceRepository = PageSequenceRepository(fileDownloadAPI, apacheLogParser, pageSequenceCalculator)
+
+        // when
+        pageSequenceRepository.fetchMostPopularPathSequences().onEach {
+            // then
+            assert(it is DataState.Error)
+        }.collect()
     }
 
     private fun getResponse(): String {
